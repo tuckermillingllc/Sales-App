@@ -11,18 +11,6 @@
             {{ selectedSalesperson || 'All Salespeople' }} • {{ dashboardData?.sampleData?.topDealers?.length || 0 }} customers
           </p>
         </div>
-        
-        <!-- Add this debug section right after your header -->
-        <div v-if="dashboardData" style="background: #f3f4f6; padding: 1rem; margin: 1rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.875rem;">
-          <strong>🔍 Debug Info:</strong><br>
-          API Success: {{ dashboardData?.success }}<br>
-          Total Customers: {{ dashboardData?.debug?.totalCustomers || 'N/A' }}<br>
-          Salespeople Count: {{ dashboardData?.debug?.uniqueSalespeopleCount || 'N/A' }}<br>
-          Salespeople: {{ dashboardData?.debug?.salespeople?.join(', ') || 'None found' }}<br>
-          Error: {{ dashboardData?.error || 'None' }}<br>
-          Selected: {{ selectedSalesperson || 'None' }}<br>
-          Dropdown Array Length: {{ salespeople.length }}
-        </div>
 
         <!-- Salesperson Selector -->
         <div style="display: flex; align-items: center; gap: 0.75rem;">
