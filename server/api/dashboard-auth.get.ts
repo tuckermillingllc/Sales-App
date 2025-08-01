@@ -11,7 +11,7 @@
  *         schema:
  *           type: string
  *         description: Filter results by specific salesperson
- *         required: true
+ *         required: false
  *     responses:
  *       200:
  *         description: Dashboard data retrieved successfully
@@ -133,9 +133,10 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const salespersonFilter = query.salesperson as string
 
-    if (!salespersonFilter) {
-      throw createError({ statusCode: 400, statusMessage: "Missing salesperson parameter" })
-    }
+    // No salesperson = return all customers
+    const whereClause = salespersonFilter
+      ? { salesperson: salespersonFilter }
+      : {}
 
     // Get all customers for the selected salesperson
     const allCustomers = await prisma.dealerCategory.findMany({
