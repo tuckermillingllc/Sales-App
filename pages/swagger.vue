@@ -124,3 +124,14 @@ body {
   color: #666;
 }
 </style>
+
+<style>
+.swagger-ui .opblock-summary-path {
+  writing-mode: horizontal-tb !important;
+  white-space: nowrap !important;
+  word-break: normal !important;
+  display: inline-block !important;
+  min-width: 120px;
+}
+</style>
+
