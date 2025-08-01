@@ -120,7 +120,7 @@
 
 <script setup>
 // Same script as before
-const { data: dashboardData, pending, error } = await useFetch('/api/test-db')
+const { data: dashboardData, pending, error } = await useFetch('/api/dashboard')
 
 const topCustomers = computed(() => dashboardData.value?.sampleData?.topDealers || [])
 const customersNeedingAttention = computed(() => dashboardData.value?.sampleData?.customersNeedingAttention || [])
