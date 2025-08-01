@@ -174,20 +174,20 @@ export default defineEventHandler(async (event) => {
     // Get total volume year-to-date (optional: add filtering on `lastOrderDate`)
     const yearStart = new Date(new Date().getFullYear(), 0, 1)
 
-    const ytdCustomers = await prisma.dealerCategory.findMany({
-      where: {
-        ...whereClause, // includes salesperson if defined
-        lastOrderDate: {
-          gte: yearStart
-        }
+    const totalVolumeYTDResult = await prisma.tuckerFilteredSales.aggregate({
+      _sum: {
+        quantity: true
       },
-      select: {
-        total_bags: true
+      where: {
+        shipment_date: {
+          gte: yearStart
+        },
+        ...(salespersonFilter ? { salesperson: salespersonFilter } : {})
       }
     })
 
+    const totalVolumeYTD = totalVolumeYTDResult._sum.quantity ?? 0
 
-    const totalVolumeYTD = ytdCustomers.reduce((sum, c) => sum + (c.total_bags ?? 0), 0)
 
     // Unique salespeople for dropdown
     const uniqueSalespeopleRaw = await prisma.dealerCategory.findMany({
