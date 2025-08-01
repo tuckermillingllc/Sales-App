@@ -217,10 +217,10 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 
-function formatNumber(value: number) {
+function formatNumber(value) {
   return new Intl.NumberFormat().format(value)
 }
 
