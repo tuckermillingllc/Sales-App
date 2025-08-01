@@ -123,9 +123,7 @@ body {
   font-size: 18px;
   color: #666;
 }
-</style>
 
-<style>
 .swagger-ui .opblock-summary-path {
   writing-mode: horizontal-tb !important;
   white-space: nowrap !important;
