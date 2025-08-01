@@ -6,10 +6,21 @@
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">Good morning</h1>
-          <p class="text-gray-500">Chris</p>
+          <p class="text-gray-500">
+            {{ dashboardData?.user?.name || 'Sales Rep' }}
+            <span v-if="!dashboardData?.isAuthenticated" class="text-orange-500">(Guest Mode)</span>
+          </p>
         </div>
-        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-          <span class="text-white font-bold">C</span>
+        <div class="flex items-center space-x-3">
+          <button v-if="dashboardData?.isAuthenticated" @click="logout" 
+                  class="text-sm text-gray-500 hover:text-gray-700">
+            Logout
+          </button>
+          <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+            <span class="text-white font-bold">
+              {{ dashboardData?.user?.name?.charAt(0) || 'G' }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -120,7 +131,12 @@
 
 <script setup>
 // Same script as before
-const { data: dashboardData, pending, error } = await useFetch('/api/dashboard')
+const { data: dashboardData, pending, error } = await useFetch('/api/dashboard-auth')
+
+const logout = async () => {
+  await $fetch('/api/auth/logout', { method: 'POST' })
+  await navigateTo('/login')
+}
 
 const topCustomers = computed(() => dashboardData.value?.sampleData?.topDealers || [])
 const customersNeedingAttention = computed(() => dashboardData.value?.sampleData?.customersNeedingAttention || [])

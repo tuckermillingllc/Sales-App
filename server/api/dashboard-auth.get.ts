@@ -1,14 +1,23 @@
-// server/api/dashboard.get.ts
+// server/api/dashboard-auth.get.ts
 import { PrismaClient } from '@prisma/client'
+import { verifyToken } from '~/server/utils/simpleAuth'
 
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   try {
-    // Temporarily remove auth requirement to fix the error
-    // const user = await requireAuth(event)
+    // Check for auth token
+    const token = getCookie(event, 'auth-token')
+    let userFilter = null
 
-    // Get all customers for now (we'll add filtering back later)
+    if (token) {
+      const user = verifyToken(token)
+      if (user) {
+        userFilter = user.name // Filter by salesperson name
+      }
+    }
+
+    // Get customers (filtered by user if authenticated)
     const topCustomers = await prisma.dealerCategory.findMany({
       select: {
         dealer_id: true,
@@ -21,10 +30,15 @@ export default defineEventHandler(async (event) => {
         last_order_date: true
       },
       where: {
-        total_bags: {
-          not: null,
-          gt: 0
-        }
+        AND: [
+          {
+            total_bags: {
+              not: null,
+              gt: 0
+            }
+          },
+          userFilter ? { salesperson: userFilter } : {}
+        ]
       },
       orderBy: {
         total_bags: 'desc'
@@ -32,7 +46,7 @@ export default defineEventHandler(async (event) => {
       take: 10
     })
 
-    // Get customers needing attention
+    // Get customers needing attention (filtered by user if authenticated)
     const customersNeedingAttention = await prisma.dealerCategory.findMany({
       select: {
         dealer_id: true,
@@ -42,13 +56,17 @@ export default defineEventHandler(async (event) => {
         attention_rank: true,
         days_since_last_order: true,
         churn_risk: true,
-        total_bags: true,
-        estimated_monthly_bags: true
+        total_bags: true
       },
       where: {
-        attention_flag: {
-          not: null
-        }
+        AND: [
+          {
+            attention_flag: {
+              not: null
+            }
+          },
+          userFilter ? { salesperson: userFilter } : {}
+        ]
       },
       orderBy: {
         attention_rank: 'asc'
@@ -58,6 +76,8 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
+      isAuthenticated: !!userFilter,
+      user: userFilter ? { name: userFilter } : null,
       sampleData: {
         topDealers: topCustomers,
         customersNeedingAttention

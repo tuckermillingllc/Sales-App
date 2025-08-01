@@ -19,6 +19,8 @@
     "@trpc/next": "^11.4.3",
     "@trpc/server": "^11.4.3",
     "@vite-pwa/nuxt": "^1.0.4",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
     "nuxt": "^4.0.1",
     "prisma": "^6.13.0",
     "vue": "^3.5.18",
@@ -27,6 +29,8 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "^2.6.2",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.1.0",
     "typescript": "^5.8.3",
     "vue-tsc": "^3.0.4"
