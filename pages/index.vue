@@ -63,7 +63,7 @@
               </svg>
             </div>
             <div>
-              <div style="font-size: 2rem; font-weight: 700; color: #111827; margin: 0;">{{ topCustomers?.length || 0 }}</div>
+              <div style="font-size: 2rem; font-weight: 700; color: #111827; margin: 0;">{{ totalCustomers || 0 }}</div>
               <div style="font-size: 0.875rem; color: #6b7280; margin: 0;">{{ selectedSalesperson ? 'My Customers' : 'All Customers' }}</div>
             </div>
           </div>
@@ -218,38 +218,14 @@
 </template>
 
 <script setup>
-const selectedSalesperson = ref('')
-const salespeople = ref([])
-
-// Fetch data based on selected salesperson
-const { data: dashboardData, pending, error, refresh } = await useFetch('/api/dashboard-auth', {
-  query: {
-    salesperson: selectedSalesperson
-  }
-})
-
-// Extract unique salespeople for dropdown
-watchEffect(() => {
-  if (dashboardData.value?.sampleData?.topDealers) {
-    const uniqueSalespeople = [...new Set(
-      dashboardData.value.sampleData.topDealers
-        .map(customer => customer.salesperson)
-        .filter(Boolean)
-    )].sort()
-    salespeople.value = uniqueSalespeople
-  }
+const { data: dashboardData, pending, error } = await useFetch('/api/dashboard-auth', {
+  query: { salesperson: 'Michael Terry' } // or dynamically from auth/session
 })
 
 const topCustomers = computed(() => dashboardData.value?.sampleData?.topDealers || [])
 const customersNeedingAttention = computed(() => dashboardData.value?.sampleData?.customersNeedingAttention || [])
-
-const refreshData = () => {
-  refresh()
-}
-
-const totalBags = computed(() => {
-  return topCustomers.value.reduce((sum, customer) => sum + (customer.total_bags || 0), 0)
-})
+const totalCustomers = computed(() => dashboardData.value?.debug?.totalCustomers || 0)
+const totalVolumeYTD = computed(() => dashboardData.value?.sampleData?.totalVolumeYTD || 0)
 
 const avgYoyGrowth = computed(() => {
   const customers = topCustomers.value.filter(c => c.yoy_change_percent_current_month !== null)
@@ -273,13 +249,13 @@ const formatPercent = (num) => {
 }
 
 const getGrowthColor = (growth) => {
-  if (growth > 0) return 'color: #059669;'
-  if (growth < 0) return 'color: #dc2626;'
-  return 'color: #6b7280;'
+  if (growth > 0) return 'text-green-600'
+  if (growth < 0) return 'text-red-600'
+  return 'text-gray-600'
 }
 
 useHead({
-  title: 'Tucker Sales Portal',
+  title: 'Tucker Sales',
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }
   ]
