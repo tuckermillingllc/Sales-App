@@ -220,11 +220,36 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 
-function formatNumber(value) {
+// ✅ Utility functions
+function formatNumber(value: number): string {
   return new Intl.NumberFormat().format(value)
 }
 
-// State
+function formatPercent(value: number): string {
+  const sign = value > 0 ? '+' : ''
+  return `${sign}${(value * 100).toFixed(1)}%`
+}
+
+function getGrowthColor(value: number | null): string {
+  if (value === null || value === undefined) return 'color: #6b7280;' // gray
+  if (value > 0) return 'color: #10b981;' // green
+  if (value < 0) return 'color: #ef4444;' // red
+  return 'color: #6b7280;' // neutral gray
+}
+
+const isLoading = ref(false)
+async function refreshData() {
+  isLoading.value = true
+  try {
+    await refresh()
+  } catch (err) {
+    console.error('Error refreshing data', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// ✅ State
 const selectedSalesperson = ref('')
 
 // Load from localStorage on mount
@@ -233,20 +258,18 @@ onMounted(() => {
   if (saved) selectedSalesperson.value = saved
 })
 
-// Fetch with reactive query
+// Fetch data
 const { data: dashboardData, pending, error, refresh } = await useFetch('/api/dashboard-auth', {
-  query: computed(() => {
-    return selectedSalesperson.value ? { salesperson: selectedSalesperson.value } : {}
-  })
+  query: computed(() => selectedSalesperson.value ? { salesperson: selectedSalesperson.value } : {})
 })
 
-// Store selection in localStorage and refresh when it changes
+// Watch for selection changes
 watch(selectedSalesperson, (newVal) => {
   localStorage.setItem('selectedSalesperson', newVal)
   refresh()
 })
 
-// Computed dashboard data
+// ✅ Computed properties
 const salespeople = computed(() => dashboardData.value?.sampleData?.allSalespeople || [])
 const topCustomers = computed(() => dashboardData.value?.sampleData?.topDealers || [])
 const customersNeedingAttention = computed(() => dashboardData.value?.sampleData?.customersNeedingAttention || [])
@@ -260,6 +283,7 @@ const avgYoyGrowth = computed(() => {
   return Math.round(avg * 10) / 10
 })
 </script>
+
 
 
 
