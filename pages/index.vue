@@ -222,7 +222,7 @@ const selectedSalesperson = ref('')
 const salespeople = ref([])
 
 // Fetch data based on selected salesperson
-const { data: dashboardData, pending, error, refresh } = await useFetch('/api/dashboard-simple', {
+const { data: dashboardData, pending, error, refresh } = await useFetch('/api/dashboard-auth', {
   query: {
     salesperson: selectedSalesperson
   }
