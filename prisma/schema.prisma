@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,144 +8,145 @@ datasource db {
   schemas  = ["sales_app"]
 }
 
-// Your existing models
 model ActiveSalespeople {
   code String  @id @db.VarChar(10)
   name String? @db.VarChar(100)
   pin  String? @db.VarChar(10)
-  type String? @default("USER") @db.VarChar(255)
-
-  // Add auth fields
-  email    String? @unique
-  password String? // For simple auth
-  isActive Boolean @default(true)
-  lastLoginAt DateTime?
+  type String? @default(dbgenerated("USER")) @db.VarChar(255)
 
   @@map("active_salespeople")
   @@schema("sales_app")
 }
 
 model DealerCategory {
-  dealer_id                    String   @id @db.VarChar(50)
-  dealer_name                  String?  @db.VarChar(255)
-  salesperson                  String?  @db.VarChar(100)
-  total_bags                   Int?
-  bags_ultra_premium           Int?
-  bags_premium                 Int?
-  bags_advantage               Int?
-  bags_economy                 Int?
-  pct_ultra_premium            Float?
-  pct_premium                  Float?
-  pct_advantage                Float?
-  pct_economy                  Float?
-  avg_bags_per_order           Float?
-  product_lines                Int?
-  product_engagement           String?  @db.VarChar(50)
-  avg_days_between_orders      Float?
-  purchase_frequency           String?  @db.VarChar(50)
-  orders                       Int?
-  total_lines                  Int?
-  first_order_date             DateTime? @db.Date
-  last_order_date              DateTime? @db.Date
-  days_since_last_order        Int?
-  customer_lifetime_days       Int?
-  activity_status              String?  @db.VarChar(50)
-  estimated_monthly_bags       Float?
-  current_month_bags_to_date   Int?
-  bags_same_month_last_year    Int?
-  bags_last_month_this_year    Int?
-  bags_last_month_last_year    Int?
-  bags_last_60_days            Int?
-  bags_same_60_days_last_year  Int?
-  bags_last_30_days            Int?
-  bags_same_30_days_last_year  Int?
-  bags_current_month_projected Float?
-  yoy_change_percent_current_month Float?
-  yoy_change_percent_last_month Float?
-  yoy_change_percent_60_days   Float?
-  yoy_change_percent_30_days   Float?
-  avg_yoy_trend_score          Float?
-  business_days_elapsed        Int?
+  dealer_id                         String    @id @db.VarChar(50)
+  dealer_name                       String?   @db.VarChar(255)
+  salesperson                       String?   @db.VarChar(100)
+  total_bags                        Int?
+  bags_ultra_premium                Int?
+  bags_premium                      Int?
+  bags_advantage                    Int?
+  bags_economy                      Int?
+  pct_ultra_premium                 Float?
+  pct_premium                       Float?
+  pct_advantage                     Float?
+  pct_economy                       Float?
+  avg_bags_per_order                Float?
+  product_lines                     Int?
+  product_engagement                String?   @db.VarChar(50)
+  avg_days_between_orders           Float?
+  purchase_frequency                String?   @db.VarChar(50)
+  orders                            Int?
+  total_lines                       Int?
+  first_order_date                  DateTime? @db.Date
+  last_order_date                   DateTime? @db.Date
+  days_since_last_order             Int?
+  customer_lifetime_days            Int?
+  activity_status                   String?   @db.VarChar(50)
+  estimated_monthly_bags            Float?
+  current_month_bags_to_date        Int?
+  bags_same_month_last_year         Int?
+  bags_last_month_this_year         Int?
+  bags_last_month_last_year         Int?
+  bags_last_60_days                 Int?
+  bags_same_60_days_last_year       Int?
+  bags_last_30_days                 Int?
+  bags_same_30_days_last_year       Int?
+  bags_current_month_projected      Float?
+  yoy_change_percent_current_month  Float?
+  yoy_change_percent_last_month     Float?
+  yoy_change_percent_60_days        Float?
+  yoy_change_percent_30_days        Float?
+  avg_yoy_trend_score               Float?
+  business_days_elapsed             Int?
   total_business_days_current_month Int?
-  month_completion_percent     Float?
-  volume_percentile            Float?
-  volume_trend_multiplier      Float?
-  best_dealer_score            Float?
-  best_dealer_rank             Int?
-  attention_flag               String?  @db.VarChar(50)
-  attention_rank               Int?
-  trend_classification         String?  @db.VarChar(100)
-  volume_tier                  String?  @db.VarChar(50)
-  customer_segment             String?  @db.VarChar(100)
-  loyalty_tier                 String?  @db.VarChar(50)
-  churn_risk                   String?  @db.VarChar(50)
-  activity_threshold_days      Int?
-  last_updated                 DateTime?
-  created_date                 DateTime?
+  month_completion_percent          Float?
+  volume_percentile                 Float?
+  volume_trend_multiplier           Float?
+  best_dealer_score                 Float?
+  best_dealer_rank                  Int?
+  attention_flag                    String?   @db.VarChar(50)
+  attention_rank                    Int?
+  trend_classification              String?   @db.VarChar(100)
+  volume_tier                       String?   @db.VarChar(50)
+  customer_segment                  String?   @db.VarChar(100)
+  loyalty_tier                      String?   @db.VarChar(50)
+  churn_risk                        String?   @db.VarChar(50)
+  activity_threshold_days           Int?
+  last_updated                      DateTime? @db.Timestamp(6)
+  created_date                      DateTime? @db.Timestamp(6)
 
   @@map("dealer_categories")
   @@schema("sales_app")
 }
 
-// Your other existing models...
 model Customer {
   id    Int     @id @default(autoincrement())
-  name  String?
-  email String?
-  phone String?
+  name  String? @db.VarChar
+  email String? @unique(map: "ix_sales_app_customers_email") @db.VarChar
+  phone String? @db.VarChar
 
+  @@index([id], map: "ix_sales_app_customers_id")
+  @@index([name], map: "ix_sales_app_customers_name")
   @@map("customers")
   @@schema("sales_app")
 }
 
 model FeedProductMapping {
-  id                     Int      @id @default(autoincrement())
-  species                String?
-  competitor             String?
-  competitor_product     String?
-  competitor_feed_form   String?
+  id                      Int      @id(map: "feed_product_mapping_new_pkey1") @default(autoincrement())
+  species                 String?
+  competitor              String?
+  competitor_product      String?
+  competitor_feed_form    String?
   competitor_dealer_price Decimal? @db.Decimal(10, 2)
   competitor_retail_price Decimal? @db.Decimal(10, 2)
-  tucker_product         String?
-  tucker_feed_form       String?
-  tucker_dealer_price    Decimal? @db.Decimal(10, 2)
+  tucker_product          String?
+  tucker_feed_form        String?
+  tucker_dealer_price     Decimal? @db.Decimal(10, 2)
 
   @@map("feed_product_mapping")
   @@schema("sales_app")
 }
 
 model TuckerFilteredSales {
-  document_no           String   @db.VarChar(20)
-  entry_no              Int
-  orders                Int?
-  document_type         Int?
-  posting_date          DateTime? @db.Date
-  shipment_date         DateTime? @db.Date
-  salesperson_code      String?  @db.VarChar(20)
-  state_name            String?  @db.VarChar(30)
-  item                  String   @db.VarChar(20)
-  blocked               Int?     @db.SmallInt
-  description           String?  @db.VarChar(50)
-  category              String?  @db.VarChar(20)
-  product_line          String?  @db.VarChar(20)
-  species               String?  @db.VarChar(20)
-  sub_species           String?  @db.VarChar(20)
-  feed_form             String?  @db.VarChar(20)
-  item_category_code    String?  @db.VarChar(20)
-  sell_to_customer_no   String?  @db.VarChar(20)
-  sell_to_customer      String?  @db.VarChar(50)
-  source_no             String   @db.VarChar(20)
-  bill_to_customer_no   String?  @db.VarChar(20)
-  bill_to_customer      String?  @db.VarChar(50)
-  salesperson           String?  @db.VarChar(50)
-  customer_price_group  String?  @db.VarChar(10)
-  og_quantity           Decimal? @db.Decimal(38, 20)
-  credit_memo_qty       Decimal  @db.Decimal(38, 20)
-  quantity              Decimal? @db.Decimal(38, 20)
-  bulk_quantity         Decimal? @db.Decimal(38, 20)
-  bag_quantity          Decimal? @db.Decimal(38, 20)
+  document_no          String    @db.VarChar(20)
+  orders               Int?
+  entry_no             Int
+  document_type        Int?
+  posting_date         DateTime? @db.Date
+  shipment_date        DateTime? @db.Date
+  salesperson_code     String?   @db.VarChar(20)
+  state_name           String?   @db.VarChar(30)
+  item                 String    @db.VarChar(20)
+  blocked              Int?      @db.SmallInt
+  description          String?   @db.VarChar(50)
+  category             String?   @db.VarChar(20)
+  product_line         String?   @db.VarChar(20)
+  species              String?   @db.VarChar(20)
+  sub_species          String?   @db.VarChar(20)
+  feed_form            String?   @db.VarChar(20)
+  item_category_code   String?   @db.VarChar(20)
+  sell_to_customer_no  String?   @db.VarChar(20)
+  sell_to_customer     String?   @db.VarChar(50)
+  source_no            String    @db.VarChar(20)
+  bill_to_customer_no  String?   @db.VarChar(20)
+  bill_to_customer     String?   @db.VarChar(50)
+  salesperson          String?   @db.VarChar(50)
+  customer_price_group String?   @db.VarChar(10)
+  og_quantity          Decimal?  @db.Decimal(38, 20)
+  credit_memo_qty      Decimal   @db.Decimal(38, 20)
+  quantity             Decimal?  @db.Decimal(38, 20)
+  bulk_quantity        Decimal?  @db.Decimal(38, 20)
+  bag_quantity         Decimal?  @db.Decimal(38, 20)
 
   @@id([document_no, entry_no])
+  @@index([posting_date, item, sell_to_customer_no], map: "idx_tucker_filtered_sales_compound")
+  @@index([sell_to_customer_no], map: "idx_tucker_filtered_sales_customer")
+  @@index([document_no], map: "idx_tucker_filtered_sales_document_no")
+  @@index([item], map: "idx_tucker_filtered_sales_item")
+  @@index([posting_date], map: "idx_tucker_filtered_sales_posting_date")
+  @@index([product_line], map: "idx_tucker_filtered_sales_product_line")
+  @@index([salesperson_code], map: "idx_tucker_filtered_sales_salesperson_code")
   @@map("tucker_filtered_sales")
   @@schema("sales_app")
 }

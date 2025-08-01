@@ -11,7 +11,7 @@
  *         schema:
  *           type: string
  *         description: Filter results by specific salesperson
- *         required: false
+ *         required: true
  *     responses:
  *       200:
  *         description: Dashboard data retrieved successfully
@@ -91,6 +91,22 @@
  *                       type: array
  *                       items:
  *                         type: string
+ *                     totalVolumeYTD:
+ *                       type: integer
+ *                       example: 13250
+ *       400:
+ *         description: Missing salesperson query parameter
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Missing salesperson parameter"
  *       500:
  *         description: Database connection error
  *         content:
@@ -106,6 +122,7 @@
  *                   example: "Database connection failed"
  */
 
+
 // server/api/dashboard-auth.get.ts
 import { PrismaClient } from '@prisma/client'
 
@@ -116,83 +133,83 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const salespersonFilter = query.salesperson as string
 
-    // Get ALL customers to populate dropdown - FIXED: using camelCase field names
+    if (!salespersonFilter) {
+      throw createError({ statusCode: 400, statusMessage: "Missing salesperson parameter" })
+    }
+
+    // Get all customers for the selected salesperson
     const allCustomers = await prisma.dealerCategory.findMany({
+      where: {
+        salesperson: salespersonFilter
+      },
       select: {
         dealer_id: true,
         dealer_name: true,
         total_bags: true,
-        salesperson: true,
-        bestDealerRank: true,  // FIXED: camelCase
-        yoyChangePercentCurrentMonth: true,  // FIXED: camelCase
-        volumeTier: true,  // FIXED: camelCase
-        lastOrderDate: true  // FIXED: camelCase
+        bestDealerRank: true,
+        yoyChangePercentCurrentMonth: true,
+        volumeTier: true,
+        lastOrderDate: true,
+        attentionRank: true,
+        attentionFlag: true,
+        daysSinceLastOrder: true,
+        churnRisk: true
       },
+      orderBy: {
+        bestDealerRank: 'asc'
+      }
+    })
+
+    // Separate top customers (ranked) and customers needing attention
+    const topCustomers = allCustomers
+      .filter(c => c.bestDealerRank !== null)
+      .sort((a, b) => a.bestDealerRank! - b.bestDealerRank!)
+      .slice(0, 10)
+
+    const customersNeedingAttention = allCustomers
+      .filter(c => (c.attentionRank ?? 0) > 0)
+      .sort((a, b) => (b.attentionRank ?? 0) - (a.attentionRank ?? 0))
+      .slice(0, 5)
+
+    // Get total volume year-to-date (optional: add filtering on `lastOrderDate`)
+    const yearStart = new Date(new Date().getFullYear(), 0, 1)
+    const ytdCustomers = await prisma.dealerCategory.findMany({
       where: {
-        total_bags: {
-          not: null,
-          gt: 0
-        },
-        salesperson: {
-          not: null,
-          not: ""
+        salesperson: salespersonFilter,
+        lastOrderDate: {
+          gte: yearStart
         }
       },
-      orderBy: {
-        total_bags: 'desc'
+      select: {
+        total_bags: true
       }
     })
 
-    // Filter customers based on selection
-    const topCustomers = salespersonFilter 
-      ? allCustomers.filter(c => c.salesperson === salespersonFilter).slice(0, 10)
-      : allCustomers.slice(0, 10)
+    const totalVolumeYTD = ytdCustomers.reduce((sum, c) => sum + (c.total_bags ?? 0), 0)
 
-    // Get unique salespeople for dropdown
-    const uniqueSalespeople = [...new Set(
-      allCustomers
-        .map(customer => customer.salesperson)
-        .filter(Boolean)
-    )].sort()
-
-    // Get customers needing attention - FIXED: using camelCase field names
-    const customersNeedingAttention = await prisma.dealerCategory.findMany({
-      select: {
-        dealer_id: true,
-        dealer_name: true,
-        salesperson: true,
-        attentionFlag: true,  // FIXED: camelCase
-        attentionRank: true,  // FIXED: camelCase
-        daysSinceLastOrder: true,  // FIXED: camelCase
-        churnRisk: true,  // FIXED: camelCase
-        total_bags: true
-      },
-      where: {
-        attentionFlag: {  // FIXED: camelCase
-          not: null
-        },
-        ...(salespersonFilter ? { salesperson: salespersonFilter } : {})
-      },
-      orderBy: {
-        attentionRank: 'asc'  // FIXED: camelCase
-      },
-      take: 5
+    // Unique salespeople for dropdown
+    const uniqueSalespeopleRaw = await prisma.dealerCategory.findMany({
+      where: { salesperson: { not: null, not: '' } },
+      select: { salesperson: true },
+      distinct: ['salesperson']
     })
+    const uniqueSalespeople = uniqueSalespeopleRaw.map(s => s.salesperson).sort()
 
     return {
-      success: true,
-      selectedSalesperson: salespersonFilter || null,
-      debug: {
-        totalCustomers: allCustomers.length,
-        uniqueSalespeopleCount: uniqueSalespeople.length,
-        salespeople: uniqueSalespeople.slice(0, 10) // Show first 10 for debug
-      },
-      sampleData: {
-        topDealers: topCustomers,
-        customersNeedingAttention,
-        allSalespeople: uniqueSalespeople // This is what the dropdown needs
-      }
-    }
+  success: true,
+  selectedSalesperson: salespersonFilter,
+  debug: {
+    totalCustomers: allCustomers.length,
+    uniqueSalespeopleCount: uniqueSalespeople.length,
+    salespeople: uniqueSalespeople
+  },
+  sampleData: {
+    topDealers: topCustomers,
+    customersNeedingAttention,
+    allSalespeople: uniqueSalespeople,
+    totalVolumeYTD
+  }
+}
   } catch (error) {
     console.error('Dashboard API error:', error)
     return {
@@ -205,7 +222,8 @@ export default defineEventHandler(async (event) => {
       sampleData: {
         topDealers: [],
         customersNeedingAttention: [],
-        allSalespeople: []
+        allSalespeople: [],
+        totalVolumeYTD: 0
       }
     }
   } finally {
