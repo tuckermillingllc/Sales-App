@@ -218,10 +218,32 @@
 </template>
 
 <script setup>
-const { data: dashboardData, pending, error } = await useFetch('/api/dashboard-auth', {
-  query: { salesperson: 'Michael Terry' } // or dynamically from auth/session
+import { ref, computed, watch, onMounted } from 'vue'
+
+// State
+const selectedSalesperson = ref('')
+
+// Load from localStorage on mount
+onMounted(() => {
+  const saved = localStorage.getItem('selectedSalesperson')
+  if (saved) selectedSalesperson.value = saved
 })
 
+// Fetch with reactive query
+const { data: dashboardData, pending, error, refresh } = await useFetch('/api/dashboard-auth', {
+  query: computed(() => {
+    return selectedSalesperson.value ? { salesperson: selectedSalesperson.value } : {}
+  })
+})
+
+// Store selection in localStorage and refresh when it changes
+watch(selectedSalesperson, (newVal) => {
+  localStorage.setItem('selectedSalesperson', newVal)
+  refresh()
+})
+
+// Computed dashboard data
+const salespeople = computed(() => dashboardData.value?.sampleData?.allSalespeople || [])
 const topCustomers = computed(() => dashboardData.value?.sampleData?.topDealers || [])
 const customersNeedingAttention = computed(() => dashboardData.value?.sampleData?.customersNeedingAttention || [])
 const totalCustomers = computed(() => dashboardData.value?.debug?.totalCustomers || 0)
@@ -233,31 +255,7 @@ const avgYoyGrowth = computed(() => {
   const avg = customers.reduce((sum, c) => sum + (c.yoy_change_percent_current_month || 0), 0) / customers.length
   return Math.round(avg * 10) / 10
 })
-
-const formatNumber = (num) => {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + 'M'
-  } else if (num >= 1000) {
-    return (num / 1000).toFixed(0) + 'K'
-  }
-  return new Intl.NumberFormat().format(num || 0)
-}
-
-const formatPercent = (num) => {
-  if (num === null || num === undefined) return '0'
-  return Math.round((num || 0) * 10) / 10
-}
-
-const getGrowthColor = (growth) => {
-  if (growth > 0) return 'text-green-600'
-  if (growth < 0) return 'text-red-600'
-  return 'text-gray-600'
-}
-
-useHead({
-  title: 'Tucker Sales',
-  meta: [
-    { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }
-  ]
-})
 </script>
+
+
+
