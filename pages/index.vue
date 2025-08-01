@@ -89,7 +89,7 @@
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <div>
               <div style="font-size: 0.875rem; color: rgba(255,255,255,0.8); margin: 0;">Total Volume</div>
-              <div style="font-size: 2.5rem; font-weight: 700; margin: 0.25rem 0;">{{ formatNumber(totalBags) }}</div>
+              <div style="font-size: 2.5rem; font-weight: 700; margin: 0.25rem 0;">{{ formatNumber(totalVolumeYTD) }}</div>
               <div style="font-size: 0.875rem; color: rgba(255,255,255,0.8); margin: 0;">bags total</div>
             </div>
             <div style="width: 3rem; height: 3rem; background: rgba(255,255,255,0.2); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
@@ -219,6 +219,10 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat().format(value)
+}
 
 // State
 const selectedSalesperson = ref('')
