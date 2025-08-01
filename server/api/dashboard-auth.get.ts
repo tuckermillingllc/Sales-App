@@ -1,24 +1,15 @@
 // server/api/dashboard-auth.get.ts
 import { PrismaClient } from '@prisma/client'
-import { verifyToken } from '~/server/utils/simpleAuth'
 
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   try {
-    // Check for auth token
-    const token = getCookie(event, 'auth-token')
-    let userFilter = null
+    const query = getQuery(event)
+    const salespersonFilter = query.salesperson as string
 
-    if (token) {
-      const user = verifyToken(token)
-      if (user) {
-        userFilter = user.name // Filter by salesperson name
-      }
-    }
-
-    // Get customers (filtered by user if authenticated)
-    const topCustomers = await prisma.dealerCategory.findMany({
+    // Get ALL customers to populate dropdown
+    const allCustomers = await prisma.dealerCategory.findMany({
       select: {
         dealer_id: true,
         dealer_name: true,
@@ -30,23 +21,33 @@ export default defineEventHandler(async (event) => {
         last_order_date: true
       },
       where: {
-        AND: [
-          {
-            total_bags: {
-              not: null,
-              gt: 0
-            }
-          },
-          userFilter ? { salesperson: userFilter } : {}
-        ]
+        total_bags: {
+          not: null,
+          gt: 0
+        },
+        salesperson: {
+          not: null,
+          not: ""
+        }
       },
       orderBy: {
         total_bags: 'desc'
-      },
-      take: 10
+      }
     })
 
-    // Get customers needing attention (filtered by user if authenticated)
+    // Filter customers based on selection
+    const topCustomers = salespersonFilter 
+      ? allCustomers.filter(c => c.salesperson === salespersonFilter).slice(0, 10)
+      : allCustomers.slice(0, 10)
+
+    // Get unique salespeople for dropdown
+    const uniqueSalespeople = [...new Set(
+      allCustomers
+        .map(customer => customer.salesperson)
+        .filter(Boolean)
+    )].sort()
+
+    // Get customers needing attention
     const customersNeedingAttention = await prisma.dealerCategory.findMany({
       select: {
         dealer_id: true,
@@ -59,14 +60,10 @@ export default defineEventHandler(async (event) => {
         total_bags: true
       },
       where: {
-        AND: [
-          {
-            attention_flag: {
-              not: null
-            }
-          },
-          userFilter ? { salesperson: userFilter } : {}
-        ]
+        attention_flag: {
+          not: null
+        },
+        ...(salespersonFilter ? { salesperson: salespersonFilter } : {})
       },
       orderBy: {
         attention_rank: 'asc'
@@ -76,19 +73,33 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      isAuthenticated: !!userFilter,
-      user: userFilter ? { name: userFilter } : null,
+      selectedSalesperson: salespersonFilter || null,
+      debug: {
+        totalCustomers: allCustomers.length,
+        uniqueSalespeopleCount: uniqueSalespeople.length,
+        salespeople: uniqueSalespeople.slice(0, 10) // Show first 10 for debug
+      },
       sampleData: {
         topDealers: topCustomers,
-        customersNeedingAttention
+        customersNeedingAttention,
+        allSalespeople: uniqueSalespeople // This is what the dropdown needs
       }
     }
   } catch (error) {
     console.error('Dashboard API error:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Database connection error'
-    })
+    return {
+      success: false,
+      error: error.message,
+      debug: { 
+        error: 'Database connection failed',
+        message: error.message 
+      },
+      sampleData: {
+        topDealers: [],
+        customersNeedingAttention: [],
+        allSalespeople: []
+      }
+    }
   } finally {
     await prisma.$disconnect()
   }
