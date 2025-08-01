@@ -1,3 +1,100 @@
+/**
+ * @swagger
+ * /test-db:
+ *   get:
+ *     summary: Test database connection
+ *     description: Tests database connectivity and returns sample data from various tables
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: Database connection test results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 counts:
+ *                   type: object
+ *                   properties:
+ *                     dealers:
+ *                       type: integer
+ *                       description: Total number of dealers
+ *                       example: 450
+ *                     salesRecords:
+ *                       type: integer
+ *                       description: Total number of sales records
+ *                       example: 15000
+ *                     activeSalespeople:
+ *                       type: integer
+ *                       description: Total number of active salespeople
+ *                       example: 25
+ *                 sampleData:
+ *                   type: object
+ *                   properties:
+ *                     topDealers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           dealer_id:
+ *                             type: integer
+ *                           dealer_name:
+ *                             type: string
+ *                           total_bags:
+ *                             type: integer
+ *                           salesperson:
+ *                             type: string
+ *                           bestDealerRank:
+ *                             type: integer
+ *                           yoyChangePercentCurrentMonth:
+ *                             type: number
+ *                           volumeTier:
+ *                             type: string
+ *                           lastOrderDate:
+ *                             type: string
+ *                             format: date
+ *                     customersNeedingAttention:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           dealer_id:
+ *                             type: integer
+ *                           dealer_name:
+ *                             type: string
+ *                           salesperson:
+ *                             type: string
+ *                           attentionFlag:
+ *                             type: string
+ *                           attentionRank:
+ *                             type: integer
+ *                           daysSinceLastOrder:
+ *                             type: integer
+ *                           churnRisk:
+ *                             type: string
+ *                           total_bags:
+ *                             type: integer
+ *                 message:
+ *                   type: string
+ *                   example: "Database connection successful!"
+ *       500:
+ *         description: Database connection failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Connection timeout"
+ */
+
 // server/api/test-db.get.ts
 import { PrismaClient } from '@prisma/client'
 

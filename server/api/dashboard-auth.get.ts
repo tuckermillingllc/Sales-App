@@ -1,3 +1,111 @@
+/**
+ * @swagger
+ * /dashboard-auth:
+ *   get:
+ *     summary: Get dashboard authentication data
+ *     description: Retrieves dashboard data including top customers, customers needing attention, and salesperson filter options
+ *     tags: [Dashboard]
+ *     parameters:
+ *       - in: query
+ *         name: salesperson
+ *         schema:
+ *           type: string
+ *         description: Filter results by specific salesperson
+ *         required: false
+ *     responses:
+ *       200:
+ *         description: Dashboard data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 selectedSalesperson:
+ *                   type: string
+ *                   nullable: true
+ *                   example: "John Smith"
+ *                 debug:
+ *                   type: object
+ *                   properties:
+ *                     totalCustomers:
+ *                       type: integer
+ *                       example: 150
+ *                     uniqueSalespeopleCount:
+ *                       type: integer
+ *                       example: 25
+ *                     salespeople:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["John Smith", "Jane Doe"]
+ *                 sampleData:
+ *                   type: object
+ *                   properties:
+ *                     topDealers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           dealer_id:
+ *                             type: integer
+ *                           dealer_name:
+ *                             type: string
+ *                           total_bags:
+ *                             type: integer
+ *                           salesperson:
+ *                             type: string
+ *                           best_dealer_rank:
+ *                             type: integer
+ *                           yoy_change_percent_current_month:
+ *                             type: number
+ *                           volume_tier:
+ *                             type: string
+ *                           last_order_date:
+ *                             type: string
+ *                             format: date
+ *                     customersNeedingAttention:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           dealer_id:
+ *                             type: integer
+ *                           dealer_name:
+ *                             type: string
+ *                           salesperson:
+ *                             type: string
+ *                           attention_flag:
+ *                             type: string
+ *                           attention_rank:
+ *                             type: integer
+ *                           days_since_last_order:
+ *                             type: integer
+ *                           churn_risk:
+ *                             type: string
+ *                           total_bags:
+ *                             type: integer
+ *                     allSalespeople:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       500:
+ *         description: Database connection error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Database connection failed"
+ */
+
 // server/api/dashboard-auth.get.ts
 import { PrismaClient } from '@prisma/client'
 

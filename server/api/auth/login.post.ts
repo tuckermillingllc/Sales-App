@@ -1,3 +1,88 @@
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticate user with email/username and password
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: User email or username
+ *                 example: "john.smith@tucker.com"
+ *               password:
+ *                 type: string
+ *                 description: User password or PIN
+ *                 example: "tucker2025"
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       description: User code/ID
+ *                       example: "JS001"
+ *                     name:
+ *                       type: string
+ *                       description: User full name
+ *                       example: "John Smith"
+ *                     email:
+ *                       type: string
+ *                       description: User email
+ *                       example: "john.smith@tucker.com"
+ *         headers:
+ *           Set-Cookie:
+ *             description: Authentication token cookie
+ *             schema:
+ *               type: string
+ *               example: "auth-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=Strict"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 400
+ *                 statusMessage:
+ *                   type: string
+ *                   example: "Email and password required"
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: integer
+ *                   example: 401
+ *                 statusMessage:
+ *                   type: string
+ *                   example: "Invalid credentials"
+ */
+
 // server/api/auth/login.post.ts
 import { PrismaClient } from '@prisma/client'
 import { createToken } from '~/server/utils/simpleAuth'
