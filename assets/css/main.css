@@ -1,0 +1,26 @@
+/* assets/css/main.css */
+/* iOS PWA Styles */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection for content areas */
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* iOS Safe Area Support */
+.pt-safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

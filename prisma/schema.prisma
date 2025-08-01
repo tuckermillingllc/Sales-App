@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["sales_app"]
+}
+
+model ActiveSalespeople {
+  code String  @id @db.VarChar(10)
+  name String? @db.VarChar(100)
+  pin  String? @db.VarChar(10)
+  type String? @default(dbgenerated("USER")) @db.VarChar(255)
+
+  @@map("active_salespeople")
+  @@schema("sales_app")
+}
+
+model Customer {
+  id    Int     @id @default(autoincrement())
+  name  String? @db.VarChar
+  email String? @unique(map: "ix_sales_app_customers_email") @db.VarChar
+  phone String? @db.VarChar
+
+  @@index([id], map: "ix_sales_app_customers_id")
+  @@index([name], map: "ix_sales_app_customers_name")
+  @@map("customers")
+  @@schema("sales_app")
+}
+
+model DealerCategory {
+  dealer_id                     String    @id @db.VarChar(50)
+  dealer_name                   String?   @db.VarChar(255)
+  salesperson                   String?   @db.VarChar(100)
+  total_bags                    Int?
+  bagsUltraPremium              Int?      @map("bags_ultra_premium")
+  bagsPremium                   Int?      @map("bags_premium")
+  bagsAdvantage                 Int?      @map("bags_advantage")
+  bagsEconomy                   Int?      @map("bags_economy")
+  pctUltraPremium               Float?    @map("pct_ultra_premium")
+  pctPremium                    Float?    @map("pct_premium")
+  pctAdvantage                  Float?    @map("pct_advantage")
+  pctEconomy                    Float?    @map("pct_economy")
+  avgBagsPerOrder               Float?    @map("avg_bags_per_order")
+  productLines                  Int?      @map("product_lines")
+  productEngagement             String?   @map("product_engagement") @db.VarChar(50)
+  avgDaysBetweenOrders          Float?    @map("avg_days_between_orders")
+  purchaseFrequency             String?   @map("purchase_frequency") @db.VarChar(50)
+  orders                        Int?
+  totalLines                    Int?      @map("total_lines")
+  firstOrderDate                DateTime? @map("first_order_date") @db.Date
+  lastOrderDate                 DateTime? @map("last_order_date") @db.Date
+  daysSinceLastOrder            Int?      @map("days_since_last_order")
+  customerLifetimeDays          Int?      @map("customer_lifetime_days")
+  activityStatus                String?   @map("activity_status") @db.VarChar(50)
+  estimatedMonthlyBags          Float?    @map("estimated_monthly_bags")
+  currentMonthBagsToDate        Int?      @map("current_month_bags_to_date")
+  bagsSameMonthLastYear         Int?      @map("bags_same_month_last_year")
+  bagsLastMonthThisYear         Int?      @map("bags_last_month_this_year")
+  bagsLastMonthLastYear         Int?      @map("bags_last_month_last_year")
+  bagsLast60Days                Int?      @map("bags_last_60_days")
+  bagsSame60DaysLastYear        Int?      @map("bags_same_60_days_last_year")
+  bagsLast30Days                Int?      @map("bags_last_30_days")
+  bagsSame30DaysLastYear        Int?      @map("bags_same_30_days_last_year")
+  bagsCurrentMonthProjected     Float?    @map("bags_current_month_projected")
+  yoyChangePercentCurrentMonth  Float?    @map("yoy_change_percent_current_month")
+  yoyChangePercentLastMonth     Float?    @map("yoy_change_percent_last_month")
+  yoyChangePercent60Days        Float?    @map("yoy_change_percent_60_days")
+  yoyChangePercent30Days        Float?    @map("yoy_change_percent_30_days")
+  avgYoyTrendScore              Float?    @map("avg_yoy_trend_score")
+  businessDaysElapsed           Int?      @map("business_days_elapsed")
+  totalBusinessDaysCurrentMonth Int?      @map("total_business_days_current_month")
+  monthCompletionPercent        Float?    @map("month_completion_percent")
+  volumePercentile              Float?    @map("volume_percentile")
+  volumeTrendMultiplier         Float?    @map("volume_trend_multiplier")
+  bestDealerScore               Float?    @map("best_dealer_score")
+  bestDealerRank                Int?      @map("best_dealer_rank")
+  attentionFlag                 String?   @map("attention_flag") @db.VarChar(50)
+  attentionRank                 Int?      @map("attention_rank")
+  trendClassification           String?   @map("trend_classification") @db.VarChar(100)
+  volumeTier                    String?   @map("volume_tier") @db.VarChar(50)
+  customerSegment               String?   @map("customer_segment") @db.VarChar(100)
+  loyaltyTier                   String?   @map("loyalty_tier") @db.VarChar(50)
+  churnRisk                     String?   @map("churn_risk") @db.VarChar(50)
+  activityThresholdDays         Int?      @map("activity_threshold_days")
+  lastUpdated                   DateTime? @map("last_updated") @db.Timestamp(6)
+  createdDate                   DateTime? @map("created_date") @db.Timestamp(6)
+
+  @@map("dealer_categories")
+  @@schema("sales_app")
+}
+
+model FeedProductMapping {
+  id                    Int      @id(map: "feed_product_mapping_new_pkey1") @default(autoincrement())
+  species               String?
+  competitor            String?
+  competitorProduct     String?  @map("competitor_product")
+  competitorFeedForm    String?  @map("competitor_feed_form")
+  competitorDealerPrice Decimal? @map("competitor_dealer_price") @db.Decimal(10, 2)
+  competitorRetailPrice Decimal? @map("competitor_retail_price") @db.Decimal(10, 2)
+  tuckerProduct         String?  @map("tucker_product")
+  tuckerFeedForm        String?  @map("tucker_feed_form")
+  tuckerDealerPrice     Decimal? @map("tucker_dealer_price") @db.Decimal(10, 2)
+
+  @@map("feed_product_mapping")
+  @@schema("sales_app")
+}
+
+model TuckerFilteredSales {
+  document_no        String    @db.VarChar(20)
+  orders             Int?
+  entry_no           Int
+  documentType       Int?      @map("document_type")
+  postingDate        DateTime? @map("posting_date") @db.Date
+  shipmentDate       DateTime? @map("shipment_date") @db.Date
+  salespersonCode    String?   @map("salesperson_code") @db.VarChar(20)
+  stateName          String?   @map("state_name") @db.VarChar(30)
+  item               String    @db.VarChar(20)
+  blocked            Int?      @db.SmallInt
+  description        String?   @db.VarChar(50)
+  category           String?   @db.VarChar(20)
+  productLine        String?   @map("product_line") @db.VarChar(20)
+  species            String?   @db.VarChar(20)
+  subSpecies         String?   @map("sub_species") @db.VarChar(20)
+  feedForm           String?   @map("feed_form") @db.VarChar(20)
+  itemCategoryCode   String?   @map("item_category_code") @db.VarChar(20)
+  sellToCustomerNo   String?   @map("sell_to_customer_no") @db.VarChar(20)
+  sellToCustomer     String?   @map("sell_to_customer") @db.VarChar(50)
+  sourceNo           String    @map("source_no") @db.VarChar(20)
+  billToCustomerNo   String?   @map("bill_to_customer_no") @db.VarChar(20)
+  billToCustomer     String?   @map("bill_to_customer") @db.VarChar(50)
+  salesperson        String?   @db.VarChar(50)
+  customerPriceGroup String?   @map("customer_price_group") @db.VarChar(10)
+  ogQuantity         Decimal?  @map("og_quantity") @db.Decimal(38, 20)
+  creditMemoQty      Decimal   @map("credit_memo_qty") @db.Decimal(38, 20)
+  quantity           Decimal?  @db.Decimal(38, 20)
+  bulkQuantity       Decimal?  @map("bulk_quantity") @db.Decimal(38, 20)
+  bagQuantity        Decimal?  @map("bag_quantity") @db.Decimal(38, 20)
+
+  @@id([document_no, entry_no])
+  @@index([postingDate, item, sellToCustomerNo], map: "idx_tucker_filtered_sales_compound")
+  @@index([sellToCustomerNo], map: "idx_tucker_filtered_sales_customer")
+  @@index([document_no], map: "idx_tucker_filtered_sales_document_no")
+  @@index([item], map: "idx_tucker_filtered_sales_item")
+  @@index([postingDate], map: "idx_tucker_filtered_sales_posting_date")
+  @@index([productLine], map: "idx_tucker_filtered_sales_product_line")
+  @@index([salespersonCode], map: "idx_tucker_filtered_sales_salesperson_code")
+  @@map("tucker_filtered_sales")
+  @@schema("sales_app")
+}
