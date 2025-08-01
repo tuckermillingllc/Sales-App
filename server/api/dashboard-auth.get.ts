@@ -171,11 +171,6 @@ export default defineEventHandler(async (event) => {
       .filter(c => (c.attentionRank ?? 0) > 0)
       .sort((a, b) => (b.attentionRank ?? 0) - (a.attentionRank ?? 0))
       .slice(0, 5)
-
-    const whereClause = salespersonFilter
-    ? { salesperson: salespersonFilter }
-    : {}
-
     // Get total volume year-to-date (optional: add filtering on `lastOrderDate`)
     const yearStart = new Date(new Date().getFullYear(), 0, 1)
 
