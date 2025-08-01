@@ -116,17 +116,17 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const salespersonFilter = query.salesperson as string
 
-    // Get ALL customers to populate dropdown
+    // Get ALL customers to populate dropdown - FIXED: using camelCase field names
     const allCustomers = await prisma.dealerCategory.findMany({
       select: {
         dealer_id: true,
         dealer_name: true,
         total_bags: true,
         salesperson: true,
-        best_dealer_rank: true,
-        yoy_change_percent_current_month: true,
-        volume_tier: true,
-        last_order_date: true
+        bestDealerRank: true,  // FIXED: camelCase
+        yoyChangePercentCurrentMonth: true,  // FIXED: camelCase
+        volumeTier: true,  // FIXED: camelCase
+        lastOrderDate: true  // FIXED: camelCase
       },
       where: {
         total_bags: {
@@ -155,26 +155,26 @@ export default defineEventHandler(async (event) => {
         .filter(Boolean)
     )].sort()
 
-    // Get customers needing attention
+    // Get customers needing attention - FIXED: using camelCase field names
     const customersNeedingAttention = await prisma.dealerCategory.findMany({
       select: {
         dealer_id: true,
         dealer_name: true,
         salesperson: true,
-        attention_flag: true,
-        attention_rank: true,
-        days_since_last_order: true,
-        churn_risk: true,
+        attentionFlag: true,  // FIXED: camelCase
+        attentionRank: true,  // FIXED: camelCase
+        daysSinceLastOrder: true,  // FIXED: camelCase
+        churnRisk: true,  // FIXED: camelCase
         total_bags: true
       },
       where: {
-        attention_flag: {
+        attentionFlag: {  // FIXED: camelCase
           not: null
         },
         ...(salespersonFilter ? { salesperson: salespersonFilter } : {})
       },
       orderBy: {
-        attention_rank: 'asc'
+        attentionRank: 'asc'  // FIXED: camelCase
       },
       take: 5
     })
